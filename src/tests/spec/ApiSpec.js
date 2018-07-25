@@ -7,15 +7,14 @@ describe("Api", function() {
 
   it("should be able to save a document", function() {
     var doc={
-		_id:'new doc',
+		_id:'new doc '+new Date().getTime(),
 		a:'A',
 		b:'B',
 		bool:true
 	};
 	return fetch(apiUrl,{
 		method:'POST',
-		
-		body:{doc:JSON.stringify(doc),table:'table1'}
+		body:JSON.stringify({doc:doc,table:'table2'})
 	})
 	.then(res =>{ 
 		console.log(res);
@@ -23,7 +22,7 @@ describe("Api", function() {
 	})
 	.then(res => {
 		console.log('res',res);
-		//expect(res._rev).toBeDefined;
+		expect(res._rev).toBeDefined();
 	});
 
   });
