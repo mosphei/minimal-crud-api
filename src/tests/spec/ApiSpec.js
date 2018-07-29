@@ -29,7 +29,7 @@ describe("Api", function() {
 			expect(retrievedDoc.a).toBe('A');
 		});
   });
-	it("should be able to update a document",function(){
+	it("should be able to update a document", function(){
 		var doc = {
 			_id:'update doc ' + new Date().getTime(),
 			a:'A',
@@ -63,9 +63,15 @@ describe("Api", function() {
 			return res.json();
 		})
 		.then(res => {
-			console.log(' updated res',res);
-			expect(res._rev).notToBe(rev);
-
+			console.log(' updated res',res._rev);
+			expect(res._rev.substring(0,2)).toBe('2-');
+			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
+		})
+		.then(res=>res.json())
+		.then(res => {
+			//console.log('res',res);
+			var retrievedDoc=res.doc;
+			expect(retrievedDoc.c).toBe('C');
 		});
-	})
+	});
 });

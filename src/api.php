@@ -42,8 +42,29 @@ function save_doc($doc,$table) {
 		$data['_id']=$doc->_id;
 	} else if ($old_doc->_rev == $doc->_rev) {
 		//update
-		http_response_code(501);
-		echo 'update ';
+		//calculate new rev
+		$rev_number=$doc->_rev + 1;
+		unset($doc->_rev);
+		$docstring .= json_encode($doc);
+		$docstring=json_encode($doc);
+		$rev = $rev_number . '-' . sha1($docstring);
+		//delete old doc
+		$sql="update $table set valid_to=now() where _id=? and _rev=? and valid_to=?";
+		$pdo->prepare($sql)->execute([
+			$doc->_id,
+			$old_doc->_rev,
+			FUTURE_TIME
+		]);
+		$sql="insert into $table (_id,_rev,doc,valid_from,valid_to) values(?,?,?,now(),?)";
+		$data['messages'] .= "update doc\nsql \"$sql\"";
+		$pdo->prepare($sql)->execute([
+			$doc->_id,
+			$rev,
+			$docstring,
+			FUTURE_TIME
+		]);
+		$data['_rev']=$rev;
+		$data['_id']=$doc->_id;
 	} else {
 		http_response_code(409);
 		$data['http_response_code']=http_response_code();
