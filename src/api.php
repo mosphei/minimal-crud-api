@@ -12,8 +12,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 } else if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 	$data['messages']='GET "' . $_GET['_id'] . '" from '. $_GET['table'];
 	$id=$_GET['_id'];
-	$table=$_GET['table'];
+	$table=preg_replace('/[^a-zA-Z0-9]/','',$_GET['table']);
 	$data['doc']=get_doc($id,$table);
+} else if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
+	$id=$_GET['_id'];
+	$table=$_GET['table'];
+	$rev=$_GET['_rev'];
+	$body=file_get_contents('php://input');	
+	if ($body) {
+		$input=json_decode($body);
+		$doc=$input->doc;
+		$id=$doc->_id;
+		$rev=$doc->_rev;
+		$table=preg_replace('/[^a-zA-Z0-9]/','',$input->table);
+	}
+	$data['messages']="delete doc '$id'($rev) from $table";
+	delete_doc($id,$rev,$table);
 }
 
 header('Content-Type: application/json');
@@ -90,5 +104,25 @@ function get_doc($id,$table) {
 			$sql="create table $table(_id varchar(255) not null,_rev varchar(255) not null,doc longtext,valid_from datetime not null,valid_to datetime not null, primary key (_id,valid_to))";
 			$pdo->exec($sql);
 		}
+	}
+}
+function delete_doc($id,$rev,$table) {
+	global $pdo, $data;
+	$old_doc = get_doc($id,$table);
+	if ($old_doc->_rev == $rev) {
+		$sql="update $table set valid_to=now() where _id=? and _rev=? and valid_to=?";
+		
+		$stmt = $pdo->prepare($sql);
+		$stmt->execute([
+			$id,
+			$rev,
+			FUTURE_TIME
+		]);
+		$deleted = $stmt->rowCount();
+		$data['messages'].="\ndeleted doc '$id' ($deleted)\n";
+	} else {
+		http_response_code(409);
+		$data['http_response_code']=http_response_code();
+		$data['error'] = '_rev does not match';
 	}
 }
