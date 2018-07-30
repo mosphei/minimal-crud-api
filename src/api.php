@@ -1,7 +1,11 @@
 <?php
 require './config.php'; 
 define("FUTURE_TIME",'9999-12-31');
+$milliseconds = round(microtime(true) * 1000);
+$d=date("Y-m-y H:i:s",microtime(true)) . '.' . $milliseconds;
+define("CURRENT_TIME",$d);
 $data;
+$data['timeish']=$d;
 //main
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$input=json_decode($HTTP_RAW_POST_DATA);
@@ -40,7 +44,7 @@ function save_doc($doc,$table) {
 	//echo json_encode($old_doc);
 	if (!$old_doc && !$doc->_rev) {
 		//insert
-		$sql="insert into $table (_id,_rev,doc,valid_from,valid_to) values(?,?,?,now(),?)";
+		$sql="insert into $table (_id,_rev,doc,valid_from,valid_to) values(?,?,?,?,?)";
 		$data['messages'] .= "new doc\nsql \"$sql\"";
 		$docstring=json_encode($doc);
 		
@@ -50,6 +54,7 @@ function save_doc($doc,$table) {
 			$doc->_id,
 			$rev,
 			json_encode($doc),
+			CURRENT_TIME,
 			FUTURE_TIME
 		]);
 		$data['_rev']=$rev;
@@ -63,18 +68,20 @@ function save_doc($doc,$table) {
 		$docstring=json_encode($doc);
 		$rev = $rev_number . '-' . sha1($docstring);
 		//delete old doc
-		$sql="update $table set valid_to=now() where _id=? and _rev=? and valid_to=?";
+		$sql="update $table set valid_to=? where _id=? and _rev=? and valid_to=?";
 		$pdo->prepare($sql)->execute([
+			CURRENT_TIME,
 			$doc->_id,
 			$old_doc->_rev,
 			FUTURE_TIME
 		]);
-		$sql="insert into $table (_id,_rev,doc,valid_from,valid_to) values(?,?,?,now(),?)";
+		$sql="insert into $table (_id,_rev,doc,valid_from,valid_to) values(?,?,?,?,?)";
 		$data['messages'] .= "update doc\nsql \"$sql\"";
 		$pdo->prepare($sql)->execute([
 			$doc->_id,
 			$rev,
 			$docstring,
+			CURRENT_TIME,
 			FUTURE_TIME
 		]);
 		$data['_rev']=$rev;
@@ -89,13 +96,22 @@ function get_doc($id,$table) {
 	global $pdo, $data;
 	try {
 		$retval;
-		$sql="select * from $table where _id = ? and valid_from <= now() and valid_to > now()";
+		$sql="select * from $table where _id = ? and valid_from <= ? and valid_to > ?";
 		$stmt = $pdo->prepare($sql);
-		$stmt->execute([$id]);
+		$stmt->execute([
+			$id,
+			CURRENT_TIME,
+			CURRENT_TIME
+		]);
 		while ($row = $stmt->fetch()) {
 			$retval = json_decode($row['doc']);
 			$retval->_id=$row['_id'];
 			$retval->_rev=$row['_rev'];
+		}
+		$count = $stmt->rowCount();
+		$data['messages'].="\nfound $count docs ('$id')\n";
+		if ($count==0) {
+			http_response_code(404);
 		}
 		return $retval;
 	} catch (PDOException $e) {
@@ -110,10 +126,11 @@ function delete_doc($id,$rev,$table) {
 	global $pdo, $data;
 	$old_doc = get_doc($id,$table);
 	if ($old_doc->_rev == $rev) {
-		$sql="update $table set valid_to=now() where _id=? and _rev=? and valid_to=?";
+		$sql="update $table set valid_to=? where _id=? and _rev=? and valid_to=?";
 		
 		$stmt = $pdo->prepare($sql);
 		$stmt->execute([
+			CURRENT_TIME,
 			$id,
 			$rev,
 			FUTURE_TIME

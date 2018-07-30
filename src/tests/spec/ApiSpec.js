@@ -88,12 +88,14 @@ describe("Api", function() {
 		.then(res => res.json())
 		.then(res => {
 			expect(res._rev).toBeDefined();
+			//get the doc
 			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
 		})
 		.then(res=>res.json())
 		.then(res => {
 			var retrievedDoc=res.doc;
 			expect(retrievedDoc.a).toBe('A');
+			//do the delete
 			return fetch(apiUrl,{
 				method:"DELETE",
 				body:JSON.stringify({
@@ -105,6 +107,7 @@ describe("Api", function() {
 		.then(res=>{
 			res.text().then(function(r){console.log('DELETE r',r)});
 			//now try and retrieve it
+			console.log("fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2')");
 			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
 		})
 		.then(res=>{

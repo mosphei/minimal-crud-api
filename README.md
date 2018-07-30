@@ -19,7 +19,6 @@ This project assumes you already have a LAMP server and have php installed and a
 This project is under active development and still has a lot left to implement
 
 1. get multiple documents
-2. update/delete documents
-3. undo operations/document history
-4. add indexed fields
-5. compact/drop tables
+2. undo operations/document history
+3. add indexed fields
+4. compact/drop tables
