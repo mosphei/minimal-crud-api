@@ -8,7 +8,8 @@ $data;
 $data['timeish']=$d;
 //main
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	$input=json_decode($HTTP_RAW_POST_DATA);
+	$raw_post_data=file_get_contents("php://input");
+	$input=json_decode($raw_post_data);
 	$doc=$input->doc;
 	$table=preg_replace('/[^a-zA-Z0-9]/','',$input->table);
 	$data= array('table' => $table, 'messages' =>'','doc'=>$doc);
@@ -44,7 +45,7 @@ function save_doc($doc,$table) {
 	//echo json_encode($old_doc);
 	if (!$old_doc && !$doc->_rev) {
 		//insert
-		$sql="insert into $table (_id,_rev,doc,valid_from,valid_to) values(?,?,?,?,?)";
+		$sql="insert into `$table` (_id,_rev,doc,valid_from,valid_to) values(?,?,?,?,?)";
 		$data['messages'] .= "new doc\nsql \"$sql\"";
 		$docstring=json_encode($doc);
 		
