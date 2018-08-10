@@ -5,8 +5,8 @@ describe("Api", function() {
 	  apiUrl=window.apiUrl;
   });
 
-  it("should be able to create a document", function() {
-    var doc={
+	it("should be able to create a document", function() {
+    	var doc={
 			_id:'new doc ' + new Date().getTime(),
 			a:'A',
 			b:'B',
@@ -28,7 +28,7 @@ describe("Api", function() {
 			var retrievedDoc=res.doc;
 			expect(retrievedDoc.a).toBe('A');
 		});
-  });
+	});
 	it("should be able to update a document", function(){
 		var doc = {
 			_id:'update doc ' + new Date().getTime(),
@@ -115,5 +115,5 @@ describe("Api", function() {
 			res.text().then(function(r){console.log(r)});
 			expect(res.status).toBe(404);
 		});
-	})
+	});
 });
