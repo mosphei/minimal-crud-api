@@ -107,13 +107,38 @@ describe("Api", function() {
 		.then(res=>{
 			res.text().then(function(r){console.log('DELETE r',r)});
 			//now try and retrieve it
-			console.log("fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2')");
+			//console.log("fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2')");
 			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
 		})
 		.then(res=>{
-			console.log('deleted res',res);
-			res.text().then(function(r){console.log(r)});
+			//console.log('deleted res',res);
+			//res.text().then(function(r){console.log(r)});
 			expect(res.status).toBe(404);
+		});
+	});
+	it('should get all documents for a table',function(){
+		var docs=[];
+		for (var i=0;i<10;i++) {
+			var doc={
+				_id:'sample doc ' + i,
+				ordinal:i,
+			};
+			docs.push(doc);
+		}
+		console.log('saving docs:',docs);
+		return fetch(apiUrl,{
+			method:'POST',
+		    body:JSON.stringify({docs:docs,table:'table2'})
+		})
+		.then((res)=>{
+			//res.text().then((txt)=>{console.log('txt:'+txt);});
+			return fetch(apiUrl+'?table=table2')
+		})
+		.then(res => res.json())
+		.then((res)=>{
+			//console.log('multiple docs response',res);
+			expect(res.docs.length >= 10).toBe(true);
+			expect(res.docs.filter((d)=>{return d._id=='sample doc 1';}).length).toBe(1);
 		});
 	});
 });
