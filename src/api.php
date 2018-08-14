@@ -81,6 +81,7 @@ function save_doc($doc,$table) {
 		]);
 		$data['_rev']=$rev;
 		$data['_id']=$doc->_id;
+		http_response_code(201);
 	} else if ($old_doc->_rev == $doc->_rev) {
 		//update
 		//calculate new rev

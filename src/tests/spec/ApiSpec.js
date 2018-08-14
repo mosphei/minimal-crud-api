@@ -16,7 +16,11 @@ describe("Api", function() {
 			method:'POST',
 			body:JSON.stringify({doc:doc,table:'table2'})
 		})
-		.then(res => res.json())
+		.then(res => {
+			console.log('res',res);
+			expect(res.status).toBe(201);
+			return res.json();
+		})
 		.then(res => {
 			//console.log('res',res);
 			expect(res._rev).toBeDefined();
