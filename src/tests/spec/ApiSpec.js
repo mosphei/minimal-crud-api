@@ -157,14 +157,12 @@ describe("Api", function() {
 		})
 		.then(res => res.json())
 		.then((res)=>{
-			console.log(res);
 			expect(res.docs.length == 11).toBe(true);
 			expect(res.docs.filter((d)=>{return d._id=='sample doc 1';}).length).toBe(1);
 			return fetch(apiUrl+'?search='+ encodeURIComponent('%"ordinal":5%') +'&table=table2')
 		})
 		.then(res => res.json())
 		.then((res)=>{
-			console.log(res);
 			expect(res.docs.length >= 1).toBe(true);
 		});
 	});

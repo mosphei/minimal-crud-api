@@ -59,10 +59,20 @@ fetch('api.php?table=misc_docs')
 });
 ```
 
+Search for documents with wildcard (%)
+```javascript
+fetch('api.php?table=misc_docs&search=example%')
+.then(res => res.json())
+.then(res => {
+    console.log('number of documents reteieved:'+res.docs.length);
+    console.log('array of documents:',res.docs);
+});
+```
+
 ## TODO
 This project is under active development and still has a lot left to implement
 
-1. get multiple documents
+1. start/end for multiple documents
 2. undo operations/document history
 3. add indexed fields
 4. compact/drop tables

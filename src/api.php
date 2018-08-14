@@ -118,7 +118,7 @@ function get_doc($id,$table) {
 	global $pdo, $data;
 	try {
 		$retval;
-		$sql="select * from $table where _id = ? and valid_from <= ? and valid_to > ?";
+		$sql="select * from $table where _id = ? and valid_from <= ? and valid_to > ? order by _id";
 		$stmt = $pdo->prepare($sql);
 		$stmt->execute([
 			$id,
@@ -168,7 +168,7 @@ function delete_doc($id,$rev,$table) {
 function search_docs($query,$table) {
 	global $pdo, $data;
 	$retval=array();
-	$sql="select * from $table where _id like ? and valid_from <= ? and valid_to > ?";
+	$sql="select * from $table where _id like ? and valid_from <= ? and valid_to > ? order by _id";
 	$stmt = $pdo->prepare($sql);
 	$stmt->execute([
 		$query,
@@ -184,7 +184,7 @@ function search_docs($query,$table) {
 	$count = $stmt->rowCount();
 	if ($count == 0) {
 		//do a full text search 
-		$sql="select * from $table where doc like ? and valid_from <= ? and valid_to > ?";
+		$sql="select * from $table where doc like ? and valid_from <= ? and valid_to > ? order by _id";
 		$stmt = $pdo->prepare($sql);
 		$stmt->execute([
 			$query,
