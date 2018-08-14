@@ -1,7 +1,7 @@
-# minimal-crud-api
+# minimal-lamp-api
 A document store api
 
-Use this CRUD endpoint on the server end if you are writing a javascript application and just need to store, retrieve, and update documents.
+Use this CRUD endpoint on a LAMP server (Linux/Apache/PHP/MySQL) if you are writing a javascript application and just need to store, retrieve, and update documents.
 
 ## Getting Started
 This project assumes you already have a LAMP server and have php installed and a mysql (or other PDO supported) database.
@@ -54,7 +54,7 @@ Retrieve all `misc_docs` documents
 fetch('api.php?table=misc_docs')
 .then(res => res.json())
 .then(res => {
-    console.log('number of documents reteieved:'+res.docs.length);
+    console.log('number of documents retrieved:'+res.docs.length);
     console.log('array of documents:',res.docs);
 });
 ```
@@ -64,7 +64,7 @@ Search for documents with wildcard (%)
 fetch('api.php?table=misc_docs&search=example%')
 .then(res => res.json())
 .then(res => {
-    console.log('number of documents reteieved:'+res.docs.length);
+    console.log('number of documents retrieved:'+res.docs.length);
     console.log('array of documents:',res.docs);
 });
 ```
