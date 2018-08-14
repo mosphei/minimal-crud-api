@@ -10,15 +10,36 @@ $data['timeish']=$d;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$raw_post_data=file_get_contents("php://input");
 	$input=json_decode($raw_post_data);
-	$doc=$input->doc;
 	$table=preg_replace('/[^a-zA-Z0-9]/','',$input->table);
-	$data= array('table' => $table, 'messages' =>'','doc'=>$doc);
-	save_doc($doc,$table);
+	if ($input->doc) {
+		//save a document
+		$doc=$input->doc;
+		$data= array('table' => $table, 'messages' =>'','doc'=>$doc);
+		save_doc($doc,$table);
+	} elseif ($input->docs) {
+		//save multiple docs
+		$data=array('table'=>$table,'messages'=>"multiple docs\n",'ids'=>array());
+		foreach($input->docs as $doc) {
+			save_doc($doc,$table);
+			$data['ids'][]=array(
+				'_id'=>$data['_id'],
+				'_rev'=>$data['_rev']
+			);
+		}
+	}
 } else if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-	$data['messages']='GET "' . $_GET['_id'] . '" from '. $_GET['table'];
-	$id=$_GET['_id'];
 	$table=preg_replace('/[^a-zA-Z0-9]/','',$_GET['table']);
-	$data['doc']=get_doc($id,$table);
+	if ($_GET['_id']) {
+		$id=$_GET['_id'];
+		$data['messages']='GET "' . $_GET['_id'] . '" from '. $_GET['table'];
+		$data['doc']=get_doc($id,$table);
+	} else {
+		$query='%';
+		if ($_GET['search']) {
+			$query=$_GET['search'] . '%';
+		}
+		$data['docs']=search_docs($query,$table);
+	}
 } else if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 	$id=$_GET['_id'];
 	$table=$_GET['table'];
@@ -97,7 +118,7 @@ function get_doc($id,$table) {
 	global $pdo, $data;
 	try {
 		$retval;
-		$sql="select * from $table where _id = ? and valid_from <= ? and valid_to > ?";
+		$sql="select * from $table where _id = ? and valid_from <= ? and valid_to > ? order by _id";
 		$stmt = $pdo->prepare($sql);
 		$stmt->execute([
 			$id,
@@ -143,4 +164,39 @@ function delete_doc($id,$rev,$table) {
 		$data['http_response_code']=http_response_code();
 		$data['error'] = '_rev does not match';
 	}
+}
+function search_docs($query,$table) {
+	global $pdo, $data;
+	$retval=array();
+	$sql="select * from $table where _id like ? and valid_from <= ? and valid_to > ? order by _id";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute([
+		$query,
+		CURRENT_TIME,
+		CURRENT_TIME
+	]);
+	while ($row=$stmt->fetch()) {
+		$doc=json_decode($row['doc']);
+		$doc->_id=$row['_id'];
+		$doc->_rev=$row['_rev'];
+		$retval[]=$doc;
+	}
+	$count = $stmt->rowCount();
+	if ($count == 0) {
+		//do a full text search 
+		$sql="select * from $table where doc like ? and valid_from <= ? and valid_to > ? order by _id";
+		$stmt = $pdo->prepare($sql);
+		$stmt->execute([
+			$query,
+			CURRENT_TIME,
+			CURRENT_TIME
+		]);
+		while ($row=$stmt->fetch()) {
+			$doc=json_decode($row['doc']);
+			$doc->_id=$row['_id'];
+			$doc->_rev=$row['_rev'];
+			$retval[]=$doc;
+		}
+	}
+	return $retval;
 }
