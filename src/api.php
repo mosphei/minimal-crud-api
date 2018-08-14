@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	} else {
 		$query='%';
 		if ($_GET['search']) {
-			$query=$_GET['search']+'%';
+			$query=$_GET['search'] . '%';
 		}
 		$data['docs']=search_docs($query,$table);
 	}
@@ -180,6 +180,23 @@ function search_docs($query,$table) {
 		$doc->_id=$row['_id'];
 		$doc->_rev=$row['_rev'];
 		$retval[]=$doc;
+	}
+	$count = $stmt->rowCount();
+	if ($count == 0) {
+		//do a full text search 
+		$sql="select * from $table where doc like ? and valid_from <= ? and valid_to > ?";
+		$stmt = $pdo->prepare($sql);
+		$stmt->execute([
+			$query,
+			CURRENT_TIME,
+			CURRENT_TIME
+		]);
+		while ($row=$stmt->fetch()) {
+			$doc=json_decode($row['doc']);
+			$doc->_id=$row['_id'];
+			$doc->_rev=$row['_rev'];
+			$retval[]=$doc;
+		}
 	}
 	return $retval;
 }

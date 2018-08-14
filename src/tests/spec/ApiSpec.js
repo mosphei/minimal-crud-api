@@ -105,9 +105,7 @@ describe("Api", function() {
 			});
 		})
 		.then(res=>{
-			res.text().then(function(r){console.log('DELETE r',r)});
 			//now try and retrieve it
-			//console.log("fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2')");
 			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
 		})
 		.then(res=>{
@@ -118,14 +116,13 @@ describe("Api", function() {
 	});
 	it('should get all documents for a table',function(){
 		var docs=[];
-		for (var i=0;i<10;i++) {
+		for (var i=0;i<20;i++) {
 			var doc={
 				_id:'sample doc ' + i,
 				ordinal:i,
 			};
 			docs.push(doc);
 		}
-		console.log('saving docs:',docs);
 		return fetch(apiUrl,{
 			method:'POST',
 		    body:JSON.stringify({docs:docs,table:'table2'})
@@ -139,6 +136,36 @@ describe("Api", function() {
 			//console.log('multiple docs response',res);
 			expect(res.docs.length >= 10).toBe(true);
 			expect(res.docs.filter((d)=>{return d._id=='sample doc 1';}).length).toBe(1);
+		});
+	});
+	
+	it('should search documents in a table',function(){
+		var docs=[];
+		for (var i=0;i<20;i++) {
+			var doc={
+				_id:'sample doc ' + i,
+				ordinal:i,
+			};
+			docs.push(doc);
+		}
+		return fetch(apiUrl,{
+			method:'POST',
+		    body:JSON.stringify({docs:docs,table:'table2'})
+		})
+		.then((res)=>{
+			return fetch(apiUrl+'?search='+ encodeURIComponent("sample doc 1") +'&table=table2')
+		})
+		.then(res => res.json())
+		.then((res)=>{
+			console.log(res);
+			expect(res.docs.length == 11).toBe(true);
+			expect(res.docs.filter((d)=>{return d._id=='sample doc 1';}).length).toBe(1);
+			return fetch(apiUrl+'?search='+ encodeURIComponent('%"ordinal":5%') +'&table=table2')
+		})
+		.then(res => res.json())
+		.then((res)=>{
+			console.log(res);
+			expect(res.docs.length >= 1).toBe(true);
 		});
 	});
 });
