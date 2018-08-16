@@ -5,7 +5,7 @@ $milliseconds = round(microtime(true) * 1000);
 $d=date("Y-m-y H:i:s",microtime(true)) . '.' . $milliseconds;
 define("CURRENT_TIME",$d);
 $data;
-$data['timeish']=$d;
+$data['CURRENT_TIME']=$d;
 //main
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$raw_post_data=file_get_contents("php://input");
@@ -149,14 +149,15 @@ function delete_doc($id,$rev,$table) {
 	global $pdo, $data;
 	$old_doc = get_doc($id,$table);
 	if ($old_doc->_rev == $rev) {
-		$sql="update $table set valid_to=? where _id=? and _rev=? and valid_to=?";
+		$sql="update $table set valid_to=? where _id=? and _rev=? and valid_from <= ? and valid_to > ?";
 		
 		$stmt = $pdo->prepare($sql);
 		$stmt->execute([
 			CURRENT_TIME,
 			$id,
 			$rev,
-			FUTURE_TIME
+			CURRENT_TIME,
+			CURRENT_TIME
 		]);
 		$deleted = $stmt->rowCount();
 		$data['messages'].="\ndeleted doc '$id' ($deleted)\n";

@@ -4,10 +4,12 @@ A document store api
 Use this CRUD endpoint on a LAMP server (Linux/Apache/PHP/MySQL) if you are writing a javascript application and just need to store, retrieve, and update documents.
 
 ## Getting Started
-This project assumes you already have a LAMP server and have php installed and a mysql (or other PDO supported) database.
+This project assumes you already have a LAMP server and have php installed and a mysql (or other PDO supported) database. If you are using a NodeJS/Webpack workflow, see [minimal-lamp-api-react](https://github.com/mosphei/minimal-lamp-api-react/) for an example of how to do this.
 
-1. Rename config.php.sample to config.php
-2. Enter database information into config.php
+1. Clone (`git clone https://github.com/mosphei/minimal-lamp-api.git`) 
+or [download](https://github.com/mosphei/minimal-lamp-api/archive/master.zip) this project 
+2. Rename config.php.sample to config.php
+3. Enter database information into config.php
 ```javascript
     $db ='name_of_database';
     $user = 'username';

@@ -17,7 +17,7 @@ describe("Api", function() {
 			body:JSON.stringify({doc:doc,table:'table2'})
 		})
 		.then(res => {
-			console.log('res',res);
+			//console.log('res',res);
 			expect(res.status).toBe(201);
 			return res.json();
 		})
@@ -137,7 +137,7 @@ describe("Api", function() {
 		})
 		.then(res => res.json())
 		.then((res)=>{
-			//console.log('multiple docs response',res);
+			console.log('multiple docs response',res);
 			expect(res.docs.length >= 10).toBe(true);
 			expect(res.docs.filter((d)=>{return d._id=='sample doc 1';}).length).toBe(1);
 		});
