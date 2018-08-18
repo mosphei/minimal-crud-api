@@ -1,9 +1,10 @@
 describe("Api", function() {
-  var apiUrl;
-
-  beforeEach(function() {
-	  apiUrl=window.apiUrl;
-  });
+	var apiUrl;
+	var table;
+	beforeEach(function() {
+		apiUrl=window.apiUrl;
+		table='_testing_table';
+	});
 
 	it("should be able to create a document", function() {
     	var doc={
@@ -14,7 +15,7 @@ describe("Api", function() {
 		};
 		return fetch(apiUrl,{
 			method:'POST',
-			body:JSON.stringify({doc:doc,table:'table2'})
+			body:JSON.stringify({doc:doc,table:table})
 		})
 		.then(res => {
 			//console.log('res',res);
@@ -24,7 +25,7 @@ describe("Api", function() {
 		.then(res => {
 			//console.log('res',res);
 			expect(res._rev).toBeDefined();
-			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
+			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table='+table);
 		})
 		.then(res=>res.json())
 		.then(res => {
@@ -44,7 +45,7 @@ describe("Api", function() {
 		//save the doc
 		return fetch(apiUrl,{
 			method:'POST',
-			body:JSON.stringify({doc:doc,table:'table2'})
+			body:JSON.stringify({doc:doc,table:table})
 		})
 		.then(res =>{ 
 			//console.log(res);
@@ -59,7 +60,7 @@ describe("Api", function() {
 			//save the doc again
 			return fetch(apiUrl,{
 				method:'POST',
-				body:JSON.stringify({doc:doc,table:'table2'})
+				body:JSON.stringify({doc:doc,table:table})
 			});
 		})
 		.then(res => {
@@ -69,7 +70,7 @@ describe("Api", function() {
 		.then(res => {
 			//console.log(' updated res',res._rev);
 			expect(res._rev.substring(0,2)).toBe('2-');
-			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
+			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table='+table);
 		})
 		.then(res=>res.json())
 		.then(res => {
@@ -87,13 +88,13 @@ describe("Api", function() {
 		};
 		return fetch(apiUrl,{
 			method:'POST',
-			body:JSON.stringify({doc:doc,table:'table2'})
+			body:JSON.stringify({doc:doc,table:table})
 		})
 		.then(res => res.json())
 		.then(res => {
 			expect(res._rev).toBeDefined();
 			//get the doc
-			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
+			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table='+table);
 		})
 		.then(res=>res.json())
 		.then(res => {
@@ -104,13 +105,13 @@ describe("Api", function() {
 				method:"DELETE",
 				body:JSON.stringify({
 					doc:{_id:doc._id,_rev:retrievedDoc._rev},
-					table:'table2'
+					table:table
 				})
 			});
 		})
 		.then(res=>{
 			//now try and retrieve it
-			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table=table2');
+			return fetch(apiUrl+'?_id='+encodeURIComponent(doc._id)+'&table='+table);
 		})
 		.then(res=>{
 			//console.log('deleted res',res);
@@ -129,11 +130,11 @@ describe("Api", function() {
 		}
 		return fetch(apiUrl,{
 			method:'POST',
-		    body:JSON.stringify({docs:docs,table:'table2'})
+		    body:JSON.stringify({docs:docs,table:table})
 		})
 		.then((res)=>{
 			//res.text().then((txt)=>{console.log('txt:'+txt);});
-			return fetch(apiUrl+'?table=table2')
+			return fetch(apiUrl+'?table='+table)
 		})
 		.then(res => res.json())
 		.then((res)=>{
@@ -154,16 +155,16 @@ describe("Api", function() {
 		}
 		return fetch(apiUrl,{
 			method:'POST',
-		    body:JSON.stringify({docs:docs,table:'table2'})
+		    body:JSON.stringify({docs:docs,table:table})
 		})
 		.then((res)=>{
-			return fetch(apiUrl+'?search='+ encodeURIComponent("sample doc 1") +'&table=table2')
+			return fetch(apiUrl+'?search='+ encodeURIComponent("sample doc 1") +'&table='+table)
 		})
 		.then(res => res.json())
 		.then((res)=>{
-			expect(res.docs.length == 11).toBe(true);
+			expect(res.docs.length).toBe(11);
 			expect(res.docs.filter((d)=>{return d._id=='sample doc 1';}).length).toBe(1);
-			return fetch(apiUrl+'?search='+ encodeURIComponent('%"ordinal":5%') +'&table=table2')
+			return fetch(apiUrl+'?search='+ encodeURIComponent('%"ordinal":5%') +'&table='+table)
 		})
 		.then(res => res.json())
 		.then((res)=>{

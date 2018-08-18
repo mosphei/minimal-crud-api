@@ -66,22 +66,42 @@ function save_doc($doc,$table) {
 	//echo json_encode($old_doc);
 	if (!$old_doc && !$doc->_rev) {
 		//insert
+		
 		$sql="insert into `$table` (_id,_rev,doc,valid_from,valid_to) values(?,?,?,?,?)";
 		$data['messages'] .= "new doc\nsql \"$sql\"";
 		$docstring=json_encode($doc);
 		
 		$rev='1-' . sha1($docstring);
-		
-		$pdo->prepare($sql)->execute([
-			$doc->_id,
-			$rev,
-			json_encode($doc),
-			CURRENT_TIME,
-			FUTURE_TIME
-		]);
+		try {
+			$pdo->prepare($sql)->execute([
+				$doc->_id,
+				$rev,
+				json_encode($doc),
+				CURRENT_TIME,
+				FUTURE_TIME
+			]);
+		} catch (PDOException $e) {
+			//create the table
+			if ($e->getCode() == '42S02') {
+				$data->messages="create table $table\n";
+				$createsql="create table $table(_id varchar(255) not null,_rev varchar(255) not null,doc longtext,valid_from datetime not null,valid_to datetime not null, primary key (_id,valid_to))";
+				$pdo->exec($createsql);
+				//try the insert again
+				$pdo->prepare($sql)->execute([
+					$doc->_id,
+					$rev,
+					json_encode($doc),
+					CURRENT_TIME,
+					FUTURE_TIME
+				]);
+			} else {
+				throw $e;
+			}
+		}
 		$data['_rev']=$rev;
 		$data['_id']=$doc->_id;
 		http_response_code(201);
+		
 	} else if ($old_doc->_rev == $doc->_rev) {
 		//update
 		//calculate new rev
@@ -117,8 +137,9 @@ function save_doc($doc,$table) {
 }
 function get_doc($id,$table) {
 	global $pdo, $data;
+	$retval;
 	try {
-		$retval;
+		
 		$sql="select * from $table where _id = ? and valid_from <= ? and valid_to > ? order by _id";
 		$stmt = $pdo->prepare($sql);
 		$stmt->execute([
@@ -136,14 +157,13 @@ function get_doc($id,$table) {
 		if ($count==0) {
 			http_response_code(404);
 		}
-		return $retval;
+		
 	} catch (PDOException $e) {
 		if ($e->getCode() == '42S02') {
-			$data->messages="create table $table\n";
-			$sql="create table $table(_id varchar(255) not null,_rev varchar(255) not null,doc longtext,valid_from datetime not null,valid_to datetime not null, primary key (_id,valid_to))";
-			$pdo->exec($sql);
+			
 		}
 	}
+	return $retval;
 }
 function delete_doc($id,$rev,$table) {
 	global $pdo, $data;
