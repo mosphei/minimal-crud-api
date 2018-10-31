@@ -2,7 +2,7 @@
 require './config.php'; 
 define("FUTURE_TIME",'9999-12-31');
 $milliseconds = round(microtime(true) * 1000);
-$d=date("Y-m-y H:i:s",microtime(true)) . '.' . $milliseconds;
+$d=date("Y-m-d H:i:s") . '.' . $milliseconds;
 define("CURRENT_TIME",$d);
 $data;
 $data['CURRENT_TIME']=$d;
