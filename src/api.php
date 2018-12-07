@@ -56,6 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	delete_doc($id,$rev,$table);
 }
 
+//CORS?
+if ($cors) {
+  header("Access-Control-Allow-Origin: $cors");
+  header("Access-Control-Allow-Methods: GET, POST, PUT");
+  header("Access-Control-Allow-Headers: Content-Type");
+  header("Access-Control-Max-Age: 86400");
+}
 header('Content-Type: application/json');
 echo json_encode($data);
 
